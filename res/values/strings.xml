@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Koppi</string>
+    <string name="menu_settings">Settings</string>
+    <string name="update">Update</string>
+    <string name="not_checked">Not checked</string>
+    <string name="last_checked">Last checked</string>
+    <string name="players_ready">%d players ready.</string>
+
+</resources>
