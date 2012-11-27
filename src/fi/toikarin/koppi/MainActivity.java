@@ -38,7 +38,6 @@ public class MainActivity extends Activity {
 
     private Main main;
     private Timer timer = new Timer();
-    private int counter = 0;
 
     private static final int updateInterval = 1000 * 60;
     private static final int updateThreshold = 2000;
@@ -48,26 +47,12 @@ public class MainActivity extends Activity {
     private static final Pattern patternWaiting = Pattern.compile("<p>(\\d) pelaajaa valmiina</p>");
     private static final SimpleDateFormat df = new SimpleDateFormat("HH:mm:ss");
 
-    public int testPlayerCount() {
-        int old = ++counter;
-
-        switch (old) {
-            case 7:
-                return 5;
-            case 8:
-                return 4;
-            case 9:
-                return 5;
-            default:
-                return old;
-        }
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        main = (Main) getApplicationContext();
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
         playerCountTextView = (TextView) findViewById(R.id.status);
         checkStatusTextView = (TextView) findViewById(R.id.textView);
@@ -77,12 +62,11 @@ public class MainActivity extends Activity {
             @Override
             public void onClick(View view) {
                 if (canUpdate()) {
-                    myClickHandler(view);
+                    update();
                 }
             }
         });
 
-        main = (Main) getApplicationContext();
 
         timer.scheduleAtFixedRate(new UpdateTask(), 0, updateInterval);
 
@@ -94,36 +78,13 @@ public class MainActivity extends Activity {
 
     @Override
     public void onPause() {
+        Log.i(TAG, "pause");
+
         if (timer != null) {
             timer.cancel();
         }
 
-        Log.i(TAG, "pause");
-
         super.onPause();
-    }
-
-    public boolean canUpdate() {
-        if (main.getLastUpdated() == null) {
-            return true;
-        }
-
-        Calendar calendar = Calendar.getInstance();
-        calendar.add(Calendar.MILLISECOND, -updateThreshold);
-
-        return calendar.after(main.getLastUpdated());
-    }
-
-    public boolean shouldUpdate() {
-        Log.w(TAG, "" + main.getLastUpdated());
-        if (main.getLastUpdated() == null) {
-            return true;
-        }
-
-        Calendar calendar = Calendar.getInstance();
-        calendar.add(Calendar.MILLISECOND, -updateInterval);
-
-        return calendar.after(main.getLastUpdated());
     }
 
     @Override
@@ -132,7 +93,26 @@ public class MainActivity extends Activity {
         return true;
     }
 
-    public void myClickHandler(View view) {
+    private static boolean timeElapsed(Calendar curCalendar, int interval) {
+        if (curCalendar == null) {
+            return true;
+        }
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.MILLISECOND, -interval);
+
+        return calendar.after(curCalendar);
+    }
+
+    private boolean canUpdate() {
+        return timeElapsed(main.getLastUpdated(), updateThreshold);
+    }
+
+    private boolean shouldUpdate() {
+        return timeElapsed(main.getLastUpdated(), updateInterval);
+    }
+
+    private void update() {
         ConnectivityManager connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
 
@@ -145,17 +125,6 @@ public class MainActivity extends Activity {
             });
         } else {
             playerCountTextView.setText("No network connection available.");
-        }
-    }
-
-    private class UpdateTask extends TimerTask {
-        @Override
-        public void run() {
-
-            if (shouldUpdate()) {
-                Log.d(TAG, "TimerTask.run() " + df.format(new Date()));
-                myClickHandler(null);
-            }
         }
     }
 
@@ -179,6 +148,44 @@ public class MainActivity extends Activity {
         }
     }
 
+    private void handle(String data) {
+        Log.d(TAG, "Received: " + data);
+
+        final int readyCount = parse(data);
+        Integer lastCount = main.getLastCount();
+
+        main.setLastCount(readyCount);
+        main.setLastUpdated(Calendar.getInstance());
+
+        MainActivity.this.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                progressBar.setVisibility(ProgressBar.GONE);
+
+                setCheckStatus();
+                setReadyCount(readyCount);
+            }
+        });
+
+        if (readyCount >= 5 && (lastCount == null || lastCount < 5)) {
+            MediaPlayer mp = MediaPlayer.create(MainActivity.this, R.raw.koppi);
+            mp.start();
+        }
+    }
+
+    private void rumble() {
+
+    }
+
+    private int parse(String data) {
+        Matcher matcher = patternWaiting.matcher(data);
+        if (matcher.find()) {
+            return Integer.parseInt(matcher.group(1));
+        }
+
+        return -1;
+    }
+
     private class DownloadKoppiStatus extends AsyncTask<Object, Object, String> {
         @Override
         protected String doInBackground(Object... params) {
@@ -191,11 +198,7 @@ public class MainActivity extends Activity {
             });
 
             try {
-                if (!debug) {
-                    return download();
-                } else {
-                    return "<p>" + testPlayerCount() + " pelaajaa valmiina</p>";
-                }
+                return download();
             } catch (IOException e) {
                 return "Unable to retrieve web page. URL may be invalid.";
             }
@@ -203,38 +206,7 @@ public class MainActivity extends Activity {
 
         @Override
         protected void onPostExecute(String result) {
-            Log.d(TAG, "Received: " + result);
-
-            final int readyCount = parse(result);
-            Integer lastCount = main.getLastCount();
-
-            main.setLastCount(readyCount);
-            main.setLastUpdated(Calendar.getInstance());
-
-            MainActivity.this.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    progressBar.setVisibility(ProgressBar.GONE);
-
-                    setCheckStatus();
-                    setReadyCount(readyCount);
-                }
-
-            });
-
-            if (readyCount >= 5 && (lastCount == null || lastCount < 5)) {
-                MediaPlayer mp = MediaPlayer.create(MainActivity.this, R.raw.koppi);
-                mp.start();
-            }
-        }
-
-        private int parse(String data) {
-            Matcher matcher = patternWaiting.matcher(data);
-            if (matcher.find()) {
-                return Integer.parseInt(matcher.group(1));
-            }
-
-            return -1;
+            handle(result);
         }
 
         private String download() throws IOException {
@@ -283,6 +255,16 @@ public class MainActivity extends Activity {
             }
 
             return sb.toString();
+        }
+    }
+
+    private class UpdateTask extends TimerTask {
+        @Override
+        public void run() {
+            if (shouldUpdate()) {
+                Log.d(TAG, "TimerTask.run() " + df.format(new Date()));
+                update();
+            }
         }
     }
 }
