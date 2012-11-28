@@ -7,5 +7,6 @@
     <string name="not_checked">Not checked</string>
     <string name="last_checked">Last checked</string>
     <string name="players_ready">%d players ready.</string>
+    <string name="crash_toast_text">Crash</string>
 
 </resources>
