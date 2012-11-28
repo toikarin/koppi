@@ -39,6 +39,7 @@ public class MainActivity extends Activity {
     private Main main;
     private SoundPool soundPool;
     private int rumbleId;
+    private int counter;
     private Timer timer = new Timer();
 
     private static final int updateInterval = 1000 * 60;
@@ -201,7 +202,11 @@ public class MainActivity extends Activity {
             });
 
             try {
-                return download();
+                if (!debug) {
+                    return download();
+                } else {
+                    return "<p>" + testCount() + " pelaajaa valmiina</p>";
+                }
             } catch (IOException e) {
                 return "Unable to retrieve web page. URL may be invalid.";
             }
@@ -269,5 +274,10 @@ public class MainActivity extends Activity {
                 update();
             }
         }
+    }
+
+    public int testCount() {
+        int[] arr = {1, 2, 3, 4, 5, 6, 5, 4, 5};
+        return arr[counter++ % arr.length];
     }
 }
