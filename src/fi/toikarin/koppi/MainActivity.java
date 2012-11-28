@@ -15,7 +15,8 @@ import java.util.TimerTask;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import android.media.MediaPlayer;
+import android.media.SoundPool;
+import android.media.AudioManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
@@ -37,6 +38,8 @@ public class MainActivity extends Activity {
     private ProgressBar progressBar;
 
     private Main main;
+    private SoundPool soundPool;
+    private int rumbleId;
     private Timer timer = new Timer();
 
     private static final int updateInterval = 1000 * 60;
@@ -67,6 +70,8 @@ public class MainActivity extends Activity {
             }
         });
 
+        soundPool = new SoundPool(1, AudioManager.STREAM_MUSIC, 0);
+        rumbleId = soundPool.load(this, R.raw.koppi, 1);
 
         timer.scheduleAtFixedRate(new UpdateTask(), 0, updateInterval);
 
@@ -168,13 +173,12 @@ public class MainActivity extends Activity {
         });
 
         if (readyCount >= 5 && (lastCount == null || lastCount < 5)) {
-            MediaPlayer mp = MediaPlayer.create(MainActivity.this, R.raw.koppi);
-            mp.start();
+            rumble();
         }
     }
 
     private void rumble() {
-
+        soundPool.play(rumbleId, 0.5f, 0.5f, 1, 0, 1.0f);
     }
 
     private int parse(String data) {
