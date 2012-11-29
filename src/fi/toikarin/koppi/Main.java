@@ -1,6 +1,7 @@
 package fi.toikarin.koppi;
 
 import java.util.Calendar;
+import java.util.Timer;
 
 import android.app.Application;
 
@@ -15,6 +16,7 @@ import org.acra.annotation.ReportsCrashes;
 public class Main extends Application {
     private Integer lastCount = null;
     private Calendar lastUpdated = null;
+    private Timer timer = null;
 
     @Override
 	public void onCreate() {
@@ -37,5 +39,13 @@ public class Main extends Application {
 
     public Calendar getLastUpdated() {
         return lastUpdated;
+    }
+
+    public Timer getUpdateTimer() {
+        return timer;
+    }
+
+    public void setUpdateTimer(Timer updateTimer) {
+        this.timer = updateTimer;
     }
 }

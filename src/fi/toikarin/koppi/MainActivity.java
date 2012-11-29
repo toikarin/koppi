@@ -40,7 +40,6 @@ public class MainActivity extends Activity {
     private SoundPool soundPool;
     private int rumbleId;
     private int counter;
-    private Timer timer = new Timer();
 
     private static final int updateInterval = 1000 * 60;
     private static final int updateThreshold = 2000;
@@ -73,7 +72,15 @@ public class MainActivity extends Activity {
         soundPool = new SoundPool(1, AudioManager.STREAM_MUSIC, 0);
         rumbleId = soundPool.load(this, R.raw.koppi, 1);
 
-        timer.scheduleAtFixedRate(new UpdateTask(), 0, updateInterval);
+
+        Timer updateTimer = main.getUpdateTimer();
+
+        if (updateTimer == null) {
+            updateTimer = new Timer();
+            main.setUpdateTimer(updateTimer);
+
+            updateTimer.scheduleAtFixedRate(new UpdateTask(), 0, updateInterval);
+        }
 
         setCheckStatus();
         if (main.getLastCount() != null) {
@@ -83,11 +90,7 @@ public class MainActivity extends Activity {
 
     @Override
     public void onPause() {
-        Log.i(TAG, "pause");
-
-        if (timer != null) {
-            timer.cancel();
-        }
+        Log.i(TAG, "paused");
 
         super.onPause();
     }
@@ -114,7 +117,7 @@ public class MainActivity extends Activity {
     }
 
     private boolean shouldUpdate() {
-        return timeElapsed(main.getLastUpdated(), updateInterval);
+        return timeElapsed(main.getLastUpdated(), updateInterval - 100);
     }
 
     private void update() {
