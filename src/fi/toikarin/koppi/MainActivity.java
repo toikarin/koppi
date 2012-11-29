@@ -21,6 +21,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Vibrator;
 import android.app.Activity;
 import android.content.Context;
 import android.util.Log;
@@ -38,6 +39,7 @@ public class MainActivity extends Activity {
 
     private Main main;
     private SoundPool soundPool;
+    private Vibrator vibrator;
     private int rumbleId;
     private int counter;
 
@@ -72,6 +74,10 @@ public class MainActivity extends Activity {
         soundPool = new SoundPool(1, AudioManager.STREAM_MUSIC, 0);
         rumbleId = soundPool.load(this, R.raw.koppi, 1);
 
+        /**
+         * Initialize vibrator
+         */
+        vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 
         Timer updateTimer = main.getUpdateTimer();
 
@@ -182,6 +188,8 @@ public class MainActivity extends Activity {
 
     private void rumble() {
         soundPool.play(rumbleId, 0.5f, 0.5f, 1, 0, 1.0f);
+
+        vibrator.vibrate(300);
     }
 
     private int parse(String data) {
