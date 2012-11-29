@@ -71,6 +71,9 @@ public class MainActivity extends Activity {
             }
         });
 
+        /**
+         * Initialize sounds
+         */
         soundPool = new SoundPool(1, AudioManager.STREAM_MUSIC, 0);
         rumbleId = soundPool.load(this, R.raw.koppi, 1);
 
@@ -79,6 +82,9 @@ public class MainActivity extends Activity {
          */
         vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 
+        /*
+         * Timer
+         */
         Timer updateTimer = main.getUpdateTimer();
 
         if (updateTimer == null) {
@@ -88,6 +94,9 @@ public class MainActivity extends Activity {
             updateTimer.scheduleAtFixedRate(new UpdateTask(), 0, updateInterval);
         }
 
+        /**
+         * Update UI
+         */
         setCheckStatus();
         if (main.getLastCount() != null) {
             setReadyCount(main.getLastCount());
