@@ -8,5 +8,7 @@
     <string name="last_checked">Last checked</string>
     <string name="players_ready">%d players ready.</string>
     <string name="crash_toast_text">Crash</string>
+    <string name="enabled">Enabled</string>
+    <string name="enable">Enable</string>
 
 </resources>

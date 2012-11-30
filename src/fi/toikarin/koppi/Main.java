@@ -17,6 +17,7 @@ public class Main extends Application {
     private Integer lastCount = null;
     private Calendar lastUpdated = null;
     private Timer timer = null;
+    private boolean enabled = true;
 
     @Override
 	public void onCreate() {
@@ -47,5 +48,13 @@ public class Main extends Application {
 
     public void setUpdateTimer(Timer updateTimer) {
         this.timer = updateTimer;
+    }
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 }

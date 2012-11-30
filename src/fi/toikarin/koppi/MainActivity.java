@@ -28,14 +28,17 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.ToggleButton;
 
 public class MainActivity extends Activity {
     private TextView playerCountTextView;
     private TextView checkStatusTextView;
     private Button updateButton;
     private ProgressBar progressBar;
+    private ToggleButton enabledToggleButton;
 
     private Main main;
     private SoundPool soundPool;
@@ -61,6 +64,7 @@ public class MainActivity extends Activity {
         playerCountTextView = (TextView) findViewById(R.id.status);
         checkStatusTextView = (TextView) findViewById(R.id.textView);
         updateButton = (Button) findViewById(R.id.updateButton);
+        enabledToggleButton = (ToggleButton) findViewById(R.id.enabledToggleButton);
 
         updateButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -70,6 +74,18 @@ public class MainActivity extends Activity {
                 }
             }
         });
+
+        enabledToggleButton.setChecked(main.isEnabled());
+        enabledToggleButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+			@Override
+			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+				if (isChecked) {
+					startUpdateTimer();
+				} else {
+					stopUpdateTimer();
+				}
+			}
+		});
 
         /**
          * Initialize sounds
@@ -85,13 +101,8 @@ public class MainActivity extends Activity {
         /*
          * Timer
          */
-        Timer updateTimer = main.getUpdateTimer();
-
-        if (updateTimer == null) {
-            updateTimer = new Timer();
-            main.setUpdateTimer(updateTimer);
-
-            updateTimer.scheduleAtFixedRate(new UpdateTask(), 0, updateInterval);
+        if (main.isEnabled()) {
+            startUpdateTimer();
         }
 
         /**
@@ -100,6 +111,28 @@ public class MainActivity extends Activity {
         setCheckStatus();
         if (main.getLastCount() != null) {
             setReadyCount(main.getLastCount());
+        }
+    }
+
+    private void startUpdateTimer() {
+        Timer updateTimer = main.getUpdateTimer();
+
+        if (updateTimer == null) {
+            Log.d(TAG, "Starting update timer.");
+            updateTimer = new Timer();
+            main.setUpdateTimer(updateTimer);
+
+            updateTimer.scheduleAtFixedRate(new UpdateTask(), 0, updateInterval);
+        }
+    }
+
+    private void stopUpdateTimer() {
+        Timer updateTimer = main.getUpdateTimer();
+
+        if (updateTimer != null) {
+            Log.d(TAG, "Stopping update timer.");
+            updateTimer.cancel();
+            main.setUpdateTimer(null);
         }
     }
 

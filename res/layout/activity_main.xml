@@ -16,6 +16,16 @@
         android:text="@string/not_checked"
         android:textAppearance="?android:attr/textAppearanceLarge" />
 
+    <ToggleButton
+        android:id="@+id/enabledToggleButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:textOn="@string/enabled"
+        android:textOff="@string/enable"
+        />
+ 
     <Button
         android:id="@+id/updateButton"
         android:layout_width="wrap_content"
