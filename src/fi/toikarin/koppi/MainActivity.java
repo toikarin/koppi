@@ -24,12 +24,14 @@ import android.os.Bundle;
 import android.os.Vibrator;
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
@@ -112,6 +114,13 @@ public class MainActivity extends Activity {
         if (main.getLastCount() != null) {
             setReadyCount(main.getLastCount());
         }
+
+        /**
+         * Set background transparency
+         */
+        RelativeLayout layout = (RelativeLayout) findViewById(R.id.layout);
+        Drawable background = layout.getBackground();
+        background.setAlpha(80);
     }
 
     private void startUpdateTimer() {
