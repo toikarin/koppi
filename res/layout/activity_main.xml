@@ -6,17 +6,6 @@
     android:background="@drawable/logo"
     tools:context=".MainActivity" >
 
-    <TextView
-        android:id="@+id/lastCheckedTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentTop="true"
-        android:layout_marginLeft="22dp"
-        android:layout_marginTop="57dp"
-        android:text="@string/not_checked"
-        android:textAppearance="?android:attr/textAppearanceLarge" />
-
     <ToggleButton
         android:id="@+id/enabledToggleButton"
         android:layout_width="wrap_content"
@@ -34,36 +23,49 @@
         android:layout_alignParentTop="true"
         android:layout_toLeftOf="@+id/enabledToggleButton"
         android:textOn="@string/muted"
-        android:textOff="@string/mute" />
-
-    <Button
-        android:id="@+id/updateButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBaseline="@+id/textView"
-        android:layout_alignBottom="@+id/textView"
-        android:layout_marginLeft="23dp"
-        android:layout_toRightOf="@+id/textView"
-        android:text="@string/update" />
+        android:textOff="@string/mute"
+        />
 
     <ProgressBar
         android:id="@+id/progressBar"
         style="?android:attr/progressBarStyleLarge"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_below="@+id/muteButton"
+        android:layout_toLeftOf="@+id/muteButton"
+        android:visibility="invisible"
+        />
+
+    <Button
+        android:id="@+id/updateButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
-        android:layout_marginBottom="24dp"
+        android:layout_marginBottom="44dp"
         android:layout_marginRight="21dp"
-        android:visibility="invisible" />
+        android:text="@string/update"
+        />
+
+    <TextView
+        android:id="@+id/lastCheckedTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_marginBottom="44dp"
+        android:layout_marginLeft="21dp"
+        android:text="@string/not_checked"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
 
     <TextView
         android:id="@+id/playerCountTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/updateButton"
+        android:layout_alignBottom="@+id/progressBar"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="78dp"
-        android:textAppearance="?android:attr/textAppearanceLarge" />
+        android:text="@string/not_checked"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        />
 
 </RelativeLayout>

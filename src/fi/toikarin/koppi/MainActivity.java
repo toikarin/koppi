@@ -235,7 +235,7 @@ public class MainActivity extends Activity {
         MainActivity.this.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                progressBar.setVisibility(ProgressBar.GONE);
+                progressBar.setVisibility(ProgressBar.INVISIBLE);
 
                 setCheckStatus();
                 setReadyCount(readyCount);
