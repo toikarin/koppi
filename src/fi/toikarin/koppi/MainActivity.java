@@ -188,6 +188,8 @@ public class MainActivity extends Activity {
         });
 
         startService(serviceIntent);
+
+        progressBar.setVisibility(ProgressBar.VISIBLE);
     }
 
     private class ActivityBroadcastReceiver extends BroadcastReceiver {
