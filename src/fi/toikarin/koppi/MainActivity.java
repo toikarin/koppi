@@ -88,11 +88,6 @@ public class MainActivity extends Activity {
         }
 
         /**
-         * Update UI
-         */
-        updateUI();
-
-        /**
          * Set background transparency
          */
         RelativeLayout layout = (RelativeLayout) findViewById(R.id.layout);
@@ -112,6 +107,7 @@ public class MainActivity extends Activity {
         super.onResume();
 
         registerReceiver(broadcastReceiver, new IntentFilter(UPDATE_EVENT_ID));
+        updateUI();
 
         Log.i(TAG, "Activity resumed.");
     }
