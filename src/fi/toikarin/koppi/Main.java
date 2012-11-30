@@ -17,6 +17,7 @@ public class Main extends Application {
     private Integer lastCount = null;
     private Calendar lastUpdated = null;
     private Timer timer = null;
+    private boolean muted = false;
     private boolean enabled = true;
 
     @Override
@@ -48,6 +49,14 @@ public class Main extends Application {
 
     public void setUpdateTimer(Timer updateTimer) {
         this.timer = updateTimer;
+    }
+
+    public boolean isMuted() {
+        return muted;
+    }
+
+    public void setMuted(boolean muted) {
+        this.muted = muted;;
     }
 
     public boolean isEnabled() {

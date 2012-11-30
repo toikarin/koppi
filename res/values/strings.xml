@@ -10,5 +10,7 @@
     <string name="crash_toast_text">Crash</string>
     <string name="enabled">Enabled</string>
     <string name="enable">Enable</string>
+    <string name="muted">Muted</string>
+    <string name="mute">Mute</string>
 
 </resources>

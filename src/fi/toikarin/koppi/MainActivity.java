@@ -41,6 +41,7 @@ public class MainActivity extends Activity {
     private Button updateButton;
     private ProgressBar progressBar;
     private ToggleButton enabledToggleButton;
+    private ToggleButton mutedToggleButton;
 
     private Main main;
     private SoundPool soundPool;
@@ -67,6 +68,7 @@ public class MainActivity extends Activity {
         lastCheckedTextView = (TextView) findViewById(R.id.lastCheckedTextView);
         updateButton = (Button) findViewById(R.id.updateButton);
         enabledToggleButton = (ToggleButton) findViewById(R.id.enabledToggleButton);
+        mutedToggleButton = (ToggleButton) findViewById(R.id.mutedToggleButton);
 
         updateButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -88,6 +90,14 @@ public class MainActivity extends Activity {
 				}
 			}
 		});
+
+        mutedToggleButton.setChecked(main.isMuted());
+        mutedToggleButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                main.setMuted(isChecked);
+            }
+        });
 
         /**
          * Initialize sounds
@@ -238,7 +248,9 @@ public class MainActivity extends Activity {
     }
 
     private void rumble() {
-        soundPool.play(rumbleId, 0.5f, 0.5f, 1, 0, 1.0f);
+        if (!main.isMuted()) {
+            soundPool.play(rumbleId, 0.5f, 0.5f, 1, 0, 1.0f);
+        }
 
         vibrator.vibrate(300);
     }
