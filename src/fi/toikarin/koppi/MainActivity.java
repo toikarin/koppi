@@ -37,7 +37,7 @@ import android.widget.ToggleButton;
 
 public class MainActivity extends Activity {
     private TextView playerCountTextView;
-    private TextView checkStatusTextView;
+    private TextView lastCheckedTextView;
     private Button updateButton;
     private ProgressBar progressBar;
     private ToggleButton enabledToggleButton;
@@ -63,8 +63,8 @@ public class MainActivity extends Activity {
 
         main = (Main) getApplicationContext();
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
-        playerCountTextView = (TextView) findViewById(R.id.status);
-        checkStatusTextView = (TextView) findViewById(R.id.textView);
+        playerCountTextView = (TextView) findViewById(R.id.playerCountTextView);
+        lastCheckedTextView = (TextView) findViewById(R.id.lastCheckedTextView);
         updateButton = (Button) findViewById(R.id.updateButton);
         enabledToggleButton = (ToggleButton) findViewById(R.id.enabledToggleButton);
 
@@ -198,7 +198,7 @@ public class MainActivity extends Activity {
             return;
         }
 
-        checkStatusTextView.setText(getResources().getString(R.string.last_checked) + ":\n"
+        lastCheckedTextView.setText(getResources().getString(R.string.last_checked) + ":\n"
                 + df.format(main.getLastUpdated().getTime()));
     }
 
