@@ -18,6 +18,7 @@ import android.widget.CompoundButton;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.ToggleButton;
 
 public class MainActivity extends Activity {
@@ -157,11 +158,15 @@ public class MainActivity extends Activity {
     }
 
     private void handle(final Response response) {
-
         MainActivity.this.runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 progressBar.setVisibility(ProgressBar.INVISIBLE);
+
+                if (!response.isOk()) {
+                    Toast.makeText(MainActivity.this, response.getMessage(),
+                        Toast.LENGTH_LONG).show();
+                }
 
                 updateUI();
             }

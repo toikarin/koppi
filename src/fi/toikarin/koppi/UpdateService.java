@@ -61,44 +61,51 @@ public class UpdateService extends IntentService {
             /**
              * Fetch current status
              */
-            String result = getCurrentStatus();
-            Log.d(TAG, "Received data: " + result);
+            try {
+                String result = getCurrentStatus();
+                Log.d(TAG, "Received data: " + result);
 
-            /**
-             * Parse data
-             */
-            int count = parse(result);
-            if (shouldRumble(count)) {
-                rumbler.rumble(!main.isMuted());
+                /**
+                 * Parse data
+                 */
+                int count = parse(result);
+                if (shouldRumble(count)) {
+                    rumbler.rumble(!main.isMuted());
+                }
+
+                /**
+                 * Update state
+                 */
+                main.setLastCount(count);
+                main.setLastUpdated(Calendar.getInstance());
+
+                /**
+                 * Send response
+                 */
+                sendResponse(intent, true, count, null);
+            } catch (IOException ioe) {
+                Log.w(TAG, "Error occurred while downloading data.", ioe);
+
+                /**
+                 * Send error response
+                 */
+                String msg = this.getResources().getString(R.string.error_downloading_data);
+                sendResponse(intent, false, -1, msg + " " + ioe.getLocalizedMessage());
             }
-
-            /**
-             * Update state
-             */
-            main.setLastCount(count);
-            main.setLastUpdated(Calendar.getInstance());
-
-            /**
-             * Send response
-             */
-            sendResponse(intent, count);
         } else {
             Log.w(TAG, "No network connection available.");
+
+            String msg = this.getResources().getString(R.string.no_network_connection);
+            sendResponse(intent, false, -1, msg);
         }
     }
 
-    private String getCurrentStatus() {
-        try {
-            if (!Main.DEBUG) {
-                return download();
-            } else {
-                return "<p>" + testCount() + " pelaajaa valmiina</p>";
-            }
-        } catch (IOException e) {
-            Log.w(TAG, "Error occurred while downloading data.", e);
+    private String getCurrentStatus() throws IOException {
+        if (!Main.DEBUG) {
+            return download();
+        } else {
+            return "<p>" + testCount() + " pelaajaa valmiina</p>";
         }
-
-        return null;
     }
 
     private String download() throws IOException {
@@ -158,11 +165,11 @@ public class UpdateService extends IntentService {
         return -1;
     }
 
-    private void sendResponse(Intent intent, int count) {
+    private void sendResponse(Intent intent, boolean ok, int count, String msg) {
         ResultReceiver resultReceiver = intent.getParcelableExtra(RESULT_RECEIVER_ID);
 
         Bundle bundle = new Bundle();
-        bundle.putParcelable(RESPONSE_ID, new Response(true, count, ""));
+        bundle.putParcelable(RESPONSE_ID, new Response(ok, count, msg));
         resultReceiver.send(0, bundle);
     }
 

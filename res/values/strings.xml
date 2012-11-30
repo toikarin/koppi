@@ -12,5 +12,7 @@
     <string name="enable">Enable</string>
     <string name="muted">Muted</string>
     <string name="mute">Mute</string>
+    <string name="no_network_connection">No network connection available</string>
+    <string name="error_downloading_data">Error while downloading data:</string>
 
 </resources>
