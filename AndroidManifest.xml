@@ -12,7 +12,7 @@
     <uses-permission android:name="android.permission.VIBRATE"/>
 
     <application
-        android:debuggable="true"
+        android:debuggable="false"
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
@@ -29,5 +29,4 @@
         <receiver android:name="Scheduler$SchedulerBroadcastReceiver"></receiver>
         <service android:name="UpdateService"></service>
     </application>
-
 </manifest>

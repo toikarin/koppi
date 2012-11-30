@@ -22,7 +22,7 @@ public class Main extends Application {
 
     public static final int UPDATE_INTERVAL = 1000 * 60;
     public static final int UPDATE_THRESHOLD = 1000 * 2;
-    public static final boolean DEBUG = true;
+    public static final boolean DEBUG = false;
 
     @Override
     public void onCreate() {
