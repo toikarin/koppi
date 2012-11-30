@@ -1,29 +1,14 @@
 package fi.toikarin.koppi;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.text.DateFormat;
 
-import android.media.SoundPool;
-import android.media.AudioManager;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Vibrator;
+import android.os.ResultReceiver;
 import android.app.Activity;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.drawable.Drawable;
 import android.util.Log;
 import android.view.Menu;
@@ -44,18 +29,13 @@ public class MainActivity extends Activity {
     private ToggleButton mutedToggleButton;
 
     private Main main;
-    private SoundPool soundPool;
-    private Vibrator vibrator;
-    private int rumbleId;
-    private int counter;
+    private BroadcastReceiver broadcastReceiver = new ActivityBroadcastReceiver();
 
-    private static final int updateInterval = 1000 * 60;
-    private static final int updateThreshold = 2000;
-    private static final boolean debug = false;
     private static final String TAG = "Koppi";
-    private static final String url = "http://peku.kapsi.fi/koppi.php";
-    private static final Pattern patternWaiting = Pattern.compile("<p>(\\d) pelaajaa valmiina</p>");
-    private static final SimpleDateFormat df = new SimpleDateFormat("HH:mm:ss");
+    private static final DateFormat df = DateFormat.getTimeInstance();
+
+    public static final String UPDATE_EVENT_ID
+        = MainActivity.class.getPackage().getName() + ".UPDATE_EVENT";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,7 +53,7 @@ public class MainActivity extends Activity {
         updateButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (canUpdate()) {
+                if (main.canUpdate()) {
                     update();
                 }
             }
@@ -81,15 +61,15 @@ public class MainActivity extends Activity {
 
         enabledToggleButton.setChecked(main.isEnabled());
         enabledToggleButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-			@Override
-			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-				if (isChecked) {
-					startUpdateTimer();
-				} else {
-					stopUpdateTimer();
-				}
-			}
-		});
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    Scheduler.start(MainActivity.this);
+                } else {
+                    Scheduler.stop(MainActivity.this);
+                }
+            }
+        });
 
         mutedToggleButton.setChecked(main.isMuted());
         mutedToggleButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -99,28 +79,17 @@ public class MainActivity extends Activity {
             }
         });
 
-        /**
-         * Initialize sounds
-         */
-        soundPool = new SoundPool(1, AudioManager.STREAM_MUSIC, 0);
-        rumbleId = soundPool.load(this, R.raw.koppi, 1);
-
-        /**
-         * Initialize vibrator
-         */
-        vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
-
         /*
-         * Timer
+         * Start scheduler
          */
         if (main.isEnabled()) {
-            startUpdateTimer();
+            Scheduler.start(this);
         }
 
         /**
          * Update UI
          */
-        setCheckStatus();
+        updateLastCheckedTextView();
         if (main.getLastCount() != null) {
             setReadyCount(main.getLastCount());
         }
@@ -133,33 +102,36 @@ public class MainActivity extends Activity {
         background.setAlpha(80);
     }
 
-    private void startUpdateTimer() {
-        Timer updateTimer = main.getUpdateTimer();
+    @Override
+    protected void onStart() {
+        super.onStart();
 
-        if (updateTimer == null) {
-            Log.d(TAG, "Starting update timer.");
-            updateTimer = new Timer();
-            main.setUpdateTimer(updateTimer);
-
-            updateTimer.scheduleAtFixedRate(new UpdateTask(), 0, updateInterval);
-        }
+        Log.i(TAG, "Activity started.");
     }
 
-    private void stopUpdateTimer() {
-        Timer updateTimer = main.getUpdateTimer();
+    @Override
+    protected void onResume() {
+        super.onResume();
 
-        if (updateTimer != null) {
-            Log.d(TAG, "Stopping update timer.");
-            updateTimer.cancel();
-            main.setUpdateTimer(null);
-        }
+        registerReceiver(broadcastReceiver, new IntentFilter(UPDATE_EVENT_ID));
+
+        Log.i(TAG, "Activity resumed.");
     }
 
     @Override
     public void onPause() {
-        Log.i(TAG, "paused");
-
         super.onPause();
+
+        unregisterReceiver(broadcastReceiver);
+
+        Log.i(TAG, "Activity paused.");
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+
+        Log.i(TAG, "Activity stopped.");
     }
 
     @Override
@@ -168,42 +140,7 @@ public class MainActivity extends Activity {
         return true;
     }
 
-    private static boolean timeElapsed(Calendar curCalendar, int interval) {
-        if (curCalendar == null) {
-            return true;
-        }
-
-        Calendar calendar = Calendar.getInstance();
-        calendar.add(Calendar.MILLISECOND, -interval);
-
-        return calendar.after(curCalendar);
-    }
-
-    private boolean canUpdate() {
-        return timeElapsed(main.getLastUpdated(), updateThreshold);
-    }
-
-    private boolean shouldUpdate() {
-        return timeElapsed(main.getLastUpdated(), updateInterval - 100);
-    }
-
-    private void update() {
-        ConnectivityManager connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
-
-        if (networkInfo != null && networkInfo.isConnected()) {
-            MainActivity.this.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    new DownloadKoppiStatus().execute();
-                }
-            });
-        } else {
-            playerCountTextView.setText("No network connection available.");
-        }
-    }
-
-    private void setCheckStatus() {
+    private void updateLastCheckedTextView() {
         if (main.getLastUpdated() == null) {
             return;
         }
@@ -223,135 +160,44 @@ public class MainActivity extends Activity {
         }
     }
 
-    private void handle(String data) {
-        Log.d(TAG, "Received: " + data);
-
-        final int readyCount = parse(data);
-        Integer lastCount = main.getLastCount();
-
-        main.setLastCount(readyCount);
-        main.setLastUpdated(Calendar.getInstance());
+    private void handle(final Response response) {
 
         MainActivity.this.runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 progressBar.setVisibility(ProgressBar.INVISIBLE);
 
-                setCheckStatus();
-                setReadyCount(readyCount);
+                updateLastCheckedTextView();
+                setReadyCount(response.getCount());
+            }
+        });
+    }
+
+    private void update() {
+        Intent serviceIntent = new Intent(this, UpdateService.class);
+
+        serviceIntent.putExtra(UpdateService.RESULT_RECEIVER_ID, new ResultReceiver(null) {
+            @Override
+            protected void onReceiveResult(int resultCode, Bundle resultData) {
+                Log.d(TAG, "Received results.");
+
+                Response response = resultData.getParcelable(UpdateService.RESPONSE_ID);
+
+                handle(response);
             }
         });
 
-        if (readyCount >= 5 && (lastCount == null || lastCount < 5)) {
-            rumble();
-        }
+        startService(serviceIntent);
     }
 
-    private void rumble() {
-        if (!main.isMuted()) {
-            soundPool.play(rumbleId, 0.5f, 0.5f, 1, 0, 1.0f);
-        }
-
-        vibrator.vibrate(300);
-    }
-
-    private int parse(String data) {
-        Matcher matcher = patternWaiting.matcher(data);
-        if (matcher.find()) {
-            return Integer.parseInt(matcher.group(1));
-        }
-
-        return -1;
-    }
-
-    private class DownloadKoppiStatus extends AsyncTask<Object, Object, String> {
+    private class ActivityBroadcastReceiver extends BroadcastReceiver {
         @Override
-        protected String doInBackground(Object... params) {
+        public void onReceive(Context context, Intent intent) {
+            Log.i(TAG, "Received update broadcast.");
 
-            MainActivity.this.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    progressBar.setVisibility(ProgressBar.VISIBLE);
-                }
-            });
+            Response response = intent.getParcelableExtra(UpdateService.RESPONSE_ID);
 
-            try {
-                if (!debug) {
-                    return download();
-                } else {
-                    return "<p>" + testCount() + " pelaajaa valmiina</p>";
-                }
-            } catch (IOException e) {
-                return "Unable to retrieve web page. URL may be invalid.";
-            }
+            handle(response);
         }
-
-        @Override
-        protected void onPostExecute(String result) {
-            handle(result);
-        }
-
-        private String download() throws IOException {
-            InputStream is = null;
-
-            Log.d(TAG, "Downloading: " + url);
-
-            try {
-                URL u = new URL(url);
-                HttpURLConnection conn = (HttpURLConnection) u.openConnection();
-                conn.setReadTimeout(10000 /* milliseconds */);
-                conn.setConnectTimeout(15000 /* milliseconds */);
-                conn.setRequestMethod("GET");
-                conn.setDoInput(true);
-
-                conn.connect();
-
-                if (conn.getResponseCode() != 200) {
-                    throw new NullPointerException();
-                }
-
-                is = conn.getInputStream();
-                return readIt(is);
-            } finally {
-                if (is != null) {
-                    is.close();
-                }
-            }
-        }
-
-        public String readIt(InputStream stream) throws IOException, UnsupportedEncodingException {
-            BufferedReader in = null;
-            StringBuilder sb = new StringBuilder();
-
-            try {
-                in = new BufferedReader(new InputStreamReader(stream, "UTF-8"));
-                String str;
-
-                while ((str = in.readLine()) != null) {
-                    sb.append(str).append('\n');
-                }
-            } finally {
-                if (in != null) {
-                    in.close();
-                }
-            }
-
-            return sb.toString();
-        }
-    }
-
-    private class UpdateTask extends TimerTask {
-        @Override
-        public void run() {
-            if (shouldUpdate()) {
-                Log.d(TAG, "TimerTask.run() " + df.format(new Date()));
-                update();
-            }
-        }
-    }
-
-    public int testCount() {
-        int[] arr = {1, 2, 3, 4, 5, 6, 5, 4, 5};
-        return arr[counter++ % arr.length];
     }
 }

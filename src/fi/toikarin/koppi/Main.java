@@ -20,12 +20,16 @@ public class Main extends Application {
     private boolean muted = false;
     private boolean enabled = true;
 
-    @Override
-	public void onCreate() {
-		super.onCreate();
+    public static final int UPDATE_INTERVAL = 1000 * 60;
+    public static final int UPDATE_THRESHOLD = 1000 * 2;
+    public static final boolean DEBUG = true;
 
-		ACRA.init(this);
-	}
+    @Override
+    public void onCreate() {
+        super.onCreate();
+
+        ACRA.init(this);
+    }
 
     public Integer getLastCount() {
         return lastCount;
@@ -65,5 +69,24 @@ public class Main extends Application {
 
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
+    }
+
+    public boolean canUpdate() {
+        return timeElapsed(getLastUpdated(), UPDATE_THRESHOLD);
+    }
+
+    public boolean shouldUpdate() {
+        return timeElapsed(getLastUpdated(), UPDATE_INTERVAL - 100);
+    }
+
+    private static boolean timeElapsed(Calendar curCalendar, int interval) {
+        if (curCalendar == null) {
+            return true;
+        }
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.MILLISECOND, -interval);
+
+        return calendar.after(curCalendar);
     }
 }
