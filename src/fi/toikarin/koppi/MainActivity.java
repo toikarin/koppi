@@ -89,10 +89,7 @@ public class MainActivity extends Activity {
         /**
          * Update UI
          */
-        updateLastCheckedTextView();
-        if (main.getLastCount() != null) {
-            setReadyCount(main.getLastCount());
-        }
+        updateUI();
 
         /**
          * Set background transparency
@@ -140,23 +137,22 @@ public class MainActivity extends Activity {
         return true;
     }
 
-    private void updateLastCheckedTextView() {
-        if (main.getLastUpdated() == null) {
-            return;
+    private void updateUI() {
+        if (main.getLastUpdated() != null) {
+            lastCheckedTextView.setText(getResources().getString(R.string.last_checked) + ":\n"
+                    + df.format(main.getLastUpdated().getTime()));
         }
 
-        lastCheckedTextView.setText(getResources().getString(R.string.last_checked) + ":\n"
-                + df.format(main.getLastUpdated().getTime()));
-    }
+        if (main.getLastCount() != null) {
+            String newText = String.format(getResources().getString(R.string.players_ready),
+                    main.getLastCount());
+            playerCountTextView.setText(newText);
 
-    private void setReadyCount(int readyCount) {
-        String newText = String.format(getResources().getString(R.string.players_ready), readyCount);
-        playerCountTextView.setText(newText);
-
-        if (readyCount >= 5) {
-            playerCountTextView.setBackgroundColor(0xFF99FF99);
-        } else {
-            playerCountTextView.setBackgroundColor(0xFFFFFF99);
+            if (main.getLastCount() >= 5) {
+                playerCountTextView.setBackgroundColor(0xFF99FF99);
+            } else {
+                playerCountTextView.setBackgroundColor(0xFFFFFF99);
+            }
         }
     }
 
@@ -167,8 +163,7 @@ public class MainActivity extends Activity {
             public void run() {
                 progressBar.setVisibility(ProgressBar.INVISIBLE);
 
-                updateLastCheckedTextView();
-                setReadyCount(response.getCount());
+                updateUI();
             }
         });
     }
