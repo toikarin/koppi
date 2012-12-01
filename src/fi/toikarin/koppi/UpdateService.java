@@ -1,15 +1,16 @@
 package fi.toikarin.koppi;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.Calendar;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.util.EntityUtils;
 
 import android.app.IntentService;
 import android.content.Context;
@@ -101,59 +102,24 @@ public class UpdateService extends IntentService {
     }
 
     private String getCurrentStatus() throws IOException {
-        if (!Main.DEBUG) {
-            return download();
-        } else {
-            return "<p>" + testCount() + " pelaajaa valmiina</p>";
-        }
+        return (!Main.DEBUG
+                ? download()
+                : "<p>" + testCount() + " pelaajaa valmiina</p>");
     }
 
     private String download() throws IOException {
-        InputStream is = null;
-
         Log.d(TAG, "Downloading updates.");
 
-        try {
-            URL u = new URL(url);
-            HttpURLConnection conn = (HttpURLConnection) u.openConnection();
-            conn.setReadTimeout(10000);
-            conn.setConnectTimeout(15000);
-            conn.setRequestMethod("GET");
-            conn.setDoInput(true);
+        HttpClient httpClient = new DefaultHttpClient();
+        HttpGet req = new HttpGet(url);
 
-            conn.connect();
+        HttpResponse response = httpClient.execute(req);
 
-            if (conn.getResponseCode() != 200) {
-                throw new NullPointerException();
-            }
-
-            is = conn.getInputStream();
-            return readIt(is);
-        } finally {
-            if (is != null) {
-                is.close();
-            }
-        }
-    }
-
-    public String readIt(InputStream stream) throws IOException, UnsupportedEncodingException {
-        BufferedReader in = null;
-        StringBuilder sb = new StringBuilder();
-
-        try {
-            in = new BufferedReader(new InputStreamReader(stream, "UTF-8"));
-            String str;
-
-            while ((str = in.readLine()) != null) {
-                sb.append(str).append('\n');
-            }
-        } finally {
-            if (in != null) {
-                in.close();
-            }
+        if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
+            throw new IOException(response.getStatusLine().getReasonPhrase());
         }
 
-        return sb.toString();
+        return EntityUtils.toString(response.getEntity());
     }
 
     private int parse(String data) {
