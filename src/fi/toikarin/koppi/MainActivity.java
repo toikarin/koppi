@@ -44,6 +44,7 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
 
         main = (Main) getApplicationContext();
+        Rumbler.getInstance(main);
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
         playerCountTextView = (TextView) findViewById(R.id.playerCountTextView);
         lastCheckedTextView = (TextView) findViewById(R.id.lastCheckedTextView);
