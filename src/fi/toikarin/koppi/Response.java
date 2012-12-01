@@ -38,7 +38,7 @@ public class Response implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeByte((byte) (ok ? 0 : 1));
+        dest.writeByte((byte) (ok ? 1 : 0));
         dest.writeInt(count);
         dest.writeString(msg);
     }
