@@ -2,23 +2,23 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
     <PreferenceCategory android:title="Main">
         <CheckBoxPreference
-            android:title="Automatic updates"
+            android:title="@string/automatic_updates"
             android:key="automatic_updates"
             />
         <CheckBoxPreference
-            android:title="Muted"
+            android:title="@string/muted"
             android:key="muted"
             />
     </PreferenceCategory>
     <PreferenceCategory android:title="Updates">
         <CheckBoxPreference
-            android:title="Background updates"
+            android:title="@string/background"
             android:dependency="automatic_updates"
-            android:summary="Keep koppi in the background"
+            android:summary="@string/background_summary"
             android:key="background_updates"
             />
         <ListPreference
-            android:title="Interval"
+            android:title="@string/interval"
             android:dependency="automatic_updates"
             android:key="update_interval"
             android:entries="@array/update_interval_keys"
