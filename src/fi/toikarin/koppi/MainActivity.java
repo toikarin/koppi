@@ -5,6 +5,9 @@ import java.text.DateFormat;
 import android.os.Bundle;
 import android.os.ResultReceiver;
 import android.app.Activity;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -32,8 +35,11 @@ public class MainActivity extends Activity {
     private Main main;
     private BroadcastReceiver broadcastReceiver = new ActivityBroadcastReceiver();
 
+    private NotificationManager notificationManager;
+
     private static final String TAG = "Koppi";
     private static final DateFormat df = DateFormat.getTimeInstance();
+    private static final int RUNNING_NOTIFICATION_ID = 1;
 
     public static final String UPDATE_EVENT_ID
         = MainActivity.class.getPackage().getName() + ".UPDATE_EVENT";
@@ -45,6 +51,9 @@ public class MainActivity extends Activity {
 
         main = (Main) getApplicationContext();
         Rumbler.getInstance(main);
+
+        notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
         playerCountTextView = (TextView) findViewById(R.id.playerCountTextView);
         lastCheckedTextView = (TextView) findViewById(R.id.lastCheckedTextView);
@@ -94,6 +103,7 @@ public class MainActivity extends Activity {
         super.onResume();
 
         registerReceiver(broadcastReceiver, new IntentFilter(UPDATE_EVENT_ID));
+        hideRunningNotification();
         updateUI();
 
         if (main.updateAutomatically()) {
@@ -122,6 +132,8 @@ public class MainActivity extends Activity {
             Log.i(TAG, "Background processing disabled, stopping scheduler.");
 
             Scheduler.stop(this);
+        } else if (main.isBackgroundEnabled() && main.updateAutomatically()) {
+            showRunningNotification();
         }
 
         super.onStop();
@@ -212,6 +224,23 @@ public class MainActivity extends Activity {
 
             handle(response);
         }
+    }
+
+    private void showRunningNotification() {
+        Notification notification = new Notification();
+
+        notification.icon = R.drawable.ic_launcher;
+        notification.flags = Notification.FLAG_ONGOING_EVENT | Notification.FLAG_NO_CLEAR;
+        notification.contentIntent = PendingIntent.getActivity(this, RUNNING_NOTIFICATION_ID,
+                new Intent(this, MainActivity.class), 0);
+        notification.setLatestEventInfo(this, getString(R.string.app_name),
+                getString(R.string.running), notification.contentIntent);
+
+        notificationManager.notify(RUNNING_NOTIFICATION_ID, notification);
+    }
+
+    private void hideRunningNotification() {
+        notificationManager.cancel(RUNNING_NOTIFICATION_ID);
     }
 
     @Override
