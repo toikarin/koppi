@@ -70,8 +70,11 @@ public class UpdateService extends IntentService {
                  * Parse data
                  */
                 int count = parse(result);
-                if (shouldRumble(count)) {
+
+                if (enoughReady(count)) {
                     rumbler.rumble(!main.isMuted());
+                } else if (almostEnoughReady(count)) {
+                    rumbler.rumble(false);
                 }
 
                 /**
@@ -139,9 +142,13 @@ public class UpdateService extends IntentService {
         resultReceiver.send(0, bundle);
     }
 
-    private boolean shouldRumble(int count) {
+    private boolean enoughReady(int count) {
         return (count >= 5 &&
                 (main.getLastCount() == null || main.getLastCount() < 5));
+    }
+
+    private boolean almostEnoughReady(int count) {
+        return (count == 4 && (main.getLastCount() == null || main.getLastCount() < 4));
     }
 
     private int testCount() {
