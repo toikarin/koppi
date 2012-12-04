@@ -9,6 +9,10 @@
             android:title="@string/muted"
             android:key="muted"
             />
+        <CheckBoxPreference
+            android:title="@string/obey_ringer_mode"
+            android:key="obey_ringer_mode"
+            />
     </PreferenceCategory>
     <PreferenceCategory android:title="Updates">
         <CheckBoxPreference

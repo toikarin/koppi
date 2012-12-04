@@ -19,6 +19,7 @@
     <string name="about">About</string>
     <string name="version">Koppi v0.3</string>
     <string name="automatic_updates">Automatic updates</string>
+    <string name="obey_ringer_mode">Obey phone\'s ringer mode</string>
     <string name="background">Background updates</string>
     <string name="background_summary">Keep Koppi in the background</string>
     <string name="interval">Interval</string>

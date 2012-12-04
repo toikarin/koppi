@@ -29,12 +29,12 @@ public class Rumbler {
         audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
     }
 
-    public void rumble(boolean playSound) {
-        if (playSound && phoneModeNormal()) {
+    public void rumble(boolean playSound, boolean obeyRingerMode) {
+        if (playSound && (!obeyRingerMode || phoneModeNormal())) {
             soundPool.play(rumbleId, 0.5f, 0.5f, 1, 0, 1.0f);
         }
 
-        if (!phoneModeSilent()) {
+        if (!obeyRingerMode || !phoneModeSilent()) {
             vibrator.vibrate(300);
         }
     }

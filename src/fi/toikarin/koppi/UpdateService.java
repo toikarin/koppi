@@ -72,9 +72,9 @@ public class UpdateService extends IntentService {
                 int count = parse(result);
 
                 if (enoughReady(count)) {
-                    rumbler.rumble(!main.isMuted());
+                    rumbler.rumble(!main.isMuted(), main.obeyRingerMode());
                 } else if (almostEnoughReady(count)) {
-                    rumbler.rumble(false);
+                    rumbler.rumble(false, main.obeyRingerMode());
                 }
 
                 /**

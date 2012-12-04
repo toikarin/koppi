@@ -19,6 +19,7 @@ public class Main extends Application {
     private Integer lastCount = null;
     private Calendar lastUpdated = null;
     private boolean muted = false;
+    private boolean obeyRingerMode = true;
     private boolean updateAutomatically = false;
     private boolean backgroundEnabled = false;
     private int updateInterval = DEFAULT_UPDATE_INTERVAL;
@@ -41,6 +42,7 @@ public class Main extends Application {
         updateAutomatically = prefs.getBoolean("automatic_updates", false);
         backgroundEnabled = prefs.getBoolean("background_updates", false);
         updateInterval = Integer.parseInt(prefs.getString("update_interval", Integer.toString(DEFAULT_UPDATE_INTERVAL)));
+        obeyRingerMode = prefs.getBoolean("obey_ringer_mode", true);
     }
 
     public Integer getLastCount() {
@@ -61,6 +63,10 @@ public class Main extends Application {
 
     public boolean isMuted() {
         return muted;
+    }
+
+    public boolean obeyRingerMode() {
+        return obeyRingerMode;
     }
 
     public boolean updateAutomatically() {
