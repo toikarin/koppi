@@ -115,18 +115,27 @@ public class MainActivity extends Activity {
 
     @Override
     public void onPause() {
-        super.onPause();
-
         unregisterReceiver(broadcastReceiver);
 
         Log.i(TAG, "Activity paused.");
+
+        super.onPause();
     }
 
     @Override
     public void onStop() {
-        super.onStop();
-
         Log.i(TAG, "Activity stopped.");
+
+        super.onStop();
+    }
+
+    @Override
+    public void onDestroy() {
+        Scheduler.stop(this);
+
+        Log.i(TAG, "Activity destroyed.");
+
+        super.onDestroy();
     }
 
     @Override
