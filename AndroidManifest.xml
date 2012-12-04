@@ -26,6 +26,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name="fi.toikarin.koppi.PrefsActivity"></activity>
+        <activity android:name="fi.toikarin.koppi.AboutActivity"></activity>
         <receiver android:name="Scheduler$SchedulerBroadcastReceiver"></receiver>
         <service android:name="UpdateService"></service>
     </application>

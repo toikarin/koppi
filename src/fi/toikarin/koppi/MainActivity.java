@@ -12,6 +12,7 @@ import android.content.IntentFilter;
 import android.graphics.drawable.Drawable;
 import android.util.Log;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
@@ -26,8 +27,7 @@ public class MainActivity extends Activity {
     private TextView lastCheckedTextView;
     private Button updateButton;
     private ProgressBar progressBar;
-    private ToggleButton enabledToggleButton;
-    private ToggleButton mutedToggleButton;
+    private ToggleButton automaticUpdatesEnabledToggleButton;
 
     private Main main;
     private BroadcastReceiver broadcastReceiver = new ActivityBroadcastReceiver();
@@ -49,8 +49,7 @@ public class MainActivity extends Activity {
         playerCountTextView = (TextView) findViewById(R.id.playerCountTextView);
         lastCheckedTextView = (TextView) findViewById(R.id.lastCheckedTextView);
         updateButton = (Button) findViewById(R.id.updateButton);
-        enabledToggleButton = (ToggleButton) findViewById(R.id.enabledToggleButton);
-        mutedToggleButton = (ToggleButton) findViewById(R.id.mutedToggleButton);
+        automaticUpdatesEnabledToggleButton = (ToggleButton) findViewById(R.id.automaticUpdatesEnabledToggleButton);
 
         updateButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -61,10 +60,12 @@ public class MainActivity extends Activity {
             }
         });
 
-        enabledToggleButton.setChecked(main.isEnabled());
-        enabledToggleButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        automaticUpdatesEnabledToggleButton.setChecked(main.updateAutomatically());
+        automaticUpdatesEnabledToggleButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                main.setUpdateAutomatically(isChecked);
+
                 if (isChecked) {
                     Scheduler.start(MainActivity.this);
                 } else {
@@ -72,21 +73,6 @@ public class MainActivity extends Activity {
                 }
             }
         });
-
-        mutedToggleButton.setChecked(main.isMuted());
-        mutedToggleButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                main.setMuted(isChecked);
-            }
-        });
-
-        /*
-         * Start scheduler
-         */
-        if (main.isEnabled()) {
-            Scheduler.start(this);
-        }
 
         /**
          * Set background transparency
@@ -110,6 +96,12 @@ public class MainActivity extends Activity {
         registerReceiver(broadcastReceiver, new IntentFilter(UPDATE_EVENT_ID));
         updateUI();
 
+        if (main.updateAutomatically()) {
+            Scheduler.start(MainActivity.this);
+        }
+
+        automaticUpdatesEnabledToggleButton.setChecked(main.updateAutomatically());
+
         Log.i(TAG, "Activity resumed.");
     }
 
@@ -126,14 +118,27 @@ public class MainActivity extends Activity {
     public void onStop() {
         Log.i(TAG, "Activity stopped.");
 
+        if (!main.isBackgroundEnabled() && main.updateAutomatically()) {
+            Log.i(TAG, "Background processing disabled, stopping scheduler.");
+
+            Scheduler.stop(this);
+        }
+
         super.onStop();
     }
 
     @Override
     public void onDestroy() {
+        Log.i(TAG, "Activity destroyed.");
+
+        super.onDestroy();
+    }
+
+    @Override
+    public void finish() {
         Scheduler.stop(this);
 
-        Log.i(TAG, "Activity destroyed.");
+        Log.i(TAG, "Activity finished.");
 
         super.onDestroy();
     }
@@ -206,6 +211,20 @@ public class MainActivity extends Activity {
             Response response = intent.getParcelableExtra(UpdateService.RESPONSE_ID);
 
             handle(response);
+        }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem menuItem) {
+        switch(menuItem.getItemId()) {
+            case R.id.preferencesMenuItem:
+                startActivity(new Intent(this, PrefsActivity.class));
+                return true;
+            case R.id.aboutMenuItem:
+                startActivity(new Intent(this, AboutActivity.class));
+                return true;
+            default:
+                return super.onOptionsItemSelected(menuItem);
         }
     }
 }

@@ -1,9 +1,11 @@
 package fi.toikarin.koppi;
 
 import java.util.Calendar;
-import java.util.Timer;
 
 import android.app.Application;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
+import android.preference.PreferenceManager;
 
 import org.acra.ACRA;
 import org.acra.ReportingInteractionMode;
@@ -16,11 +18,12 @@ import org.acra.annotation.ReportsCrashes;
 public class Main extends Application {
     private Integer lastCount = null;
     private Calendar lastUpdated = null;
-    private Timer timer = null;
     private boolean muted = false;
-    private boolean enabled = true;
+    private boolean updateAutomatically = false;
+    private boolean backgroundEnabled = false;
+    private int updateInterval = DEFAULT_UPDATE_INTERVAL;
 
-    public static final int UPDATE_INTERVAL = 1000 * 60;
+    public static final int DEFAULT_UPDATE_INTERVAL = 1000 * 60;
     public static final int UPDATE_THRESHOLD = 1000 * 2;
     public static final boolean DEBUG = false;
 
@@ -29,6 +32,15 @@ public class Main extends Application {
         super.onCreate();
 
         ACRA.init(this);
+
+        setState(PreferenceManager.getDefaultSharedPreferences(this));
+    }
+
+    public void setState(SharedPreferences prefs) {
+        muted = prefs.getBoolean("muted", false);
+        updateAutomatically = prefs.getBoolean("automatic_updates", false);
+        backgroundEnabled = prefs.getBoolean("background_updates", false);
+        updateInterval = Integer.parseInt(prefs.getString("update_interval", Integer.toString(DEFAULT_UPDATE_INTERVAL)));
     }
 
     public Integer getLastCount() {
@@ -47,36 +59,34 @@ public class Main extends Application {
         return lastUpdated;
     }
 
-    public Timer getUpdateTimer() {
-        return timer;
-    }
-
-    public void setUpdateTimer(Timer updateTimer) {
-        this.timer = updateTimer;
-    }
-
     public boolean isMuted() {
         return muted;
     }
 
-    public void setMuted(boolean muted) {
-        this.muted = muted;;
+    public boolean updateAutomatically() {
+        return updateAutomatically;
     }
 
-    public boolean isEnabled() {
-        return enabled;
+    public void setUpdateAutomatically(boolean updateAutomatically) {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        Editor editor = preferences.edit();
+
+        editor.putBoolean("automatic_updates", updateAutomatically);
+        editor.commit();
+
+        this.updateAutomatically = updateAutomatically;
     }
 
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
+    public boolean isBackgroundEnabled() {
+        return backgroundEnabled;
+    }
+
+    public int getUpdateInterval() {
+        return updateInterval;
     }
 
     public boolean canUpdate() {
         return timeElapsed(getLastUpdated(), UPDATE_THRESHOLD);
-    }
-
-    public boolean shouldUpdate() {
-        return timeElapsed(getLastUpdated(), UPDATE_INTERVAL - 100);
     }
 
     private static boolean timeElapsed(Calendar curCalendar, int interval) {

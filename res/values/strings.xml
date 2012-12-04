@@ -14,5 +14,10 @@
     <string name="mute">Mute</string>
     <string name="no_network_connection">No network connection available</string>
     <string name="error_downloading_data">Error while downloading data:</string>
+    <string name="background">Background</string>
+    <string name="running">Koppi is still running in the background&#8230;</string>
+    <string name="preferences">Preferences</string>
+    <string name="about">About</string>
+    <string name="version">Koppi v0.3</string>
 
 </resources>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+    <PreferenceCategory android:title="Main">
+        <CheckBoxPreference
+            android:title="Automatic updates"
+            android:key="automatic_updates"
+            />
+        <CheckBoxPreference
+            android:title="Muted"
+            android:key="muted"
+            />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="Updates">
+        <CheckBoxPreference
+            android:title="Background updates"
+            android:dependency="automatic_updates"
+            android:summary="Keep koppi in the background"
+            android:key="background_updates"
+            />
+        <ListPreference
+            android:title="Interval"
+            android:dependency="automatic_updates"
+            android:key="update_interval"
+            android:entries="@array/update_interval_keys"
+            android:entryValues="@array/update_intervals"
+            />
+    </PreferenceCategory>
+</PreferenceScreen>

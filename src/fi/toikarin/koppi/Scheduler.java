@@ -17,12 +17,13 @@ public class Scheduler {
     public static void start(Context context) {
         Log.i(TAG, "Starting scheduler.");
 
+        Main main = (Main) context.getApplicationContext();
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         Intent intent = new Intent(context, SchedulerBroadcastReceiver.class);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, 0);
 
         alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(),
-                Main.UPDATE_INTERVAL, pendingIntent);
+                main.getUpdateInterval(), pendingIntent);
     }
 
     public static void stop(Context context) {
