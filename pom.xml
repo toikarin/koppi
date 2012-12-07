@@ -21,7 +21,7 @@
         </dependency>
     </dependencies>
     <build>
-        <finalName>${project.artifactId}</finalName>
+        <finalName>${project.artifactId}-${project.version}</finalName>
         <sourceDirectory>src</sourceDirectory>
         <pluginManagement>
             <plugins>
